@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship
 
-from ..database import Base
+from database import Base
 
 
 class Enterprise(Base):
@@ -13,7 +13,7 @@ class Enterprise(Base):
     location = Column(String, default='')
     business_hours = Column(String, default='9:00 - 18:00')
 
-    products = relationship("Product", back_populates="enterprise", uselist=True)
+    products = relationship("Product", back_populates="enterprise", cascade="all, delete-orphan", uselist=True)
 
     def __repr__(self):
         return f"<Enterprise(id={self.id}, name='{self.name}', description='{self.description}', location='{self.location}', business_hours='{self.business_hours}')>"

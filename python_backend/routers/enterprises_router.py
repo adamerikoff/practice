@@ -1,45 +1,58 @@
 from fastapi import APIRouter, Depends, HTTPException
 
+from typing import List
+from sqlalchemy.orm import Session
+from models.models import Enterprise, Product
+from database import get_db
+from schemas.enterprise_schema import EnterpriseBase, EnterpriseCreate, EnterpriseInDB, EnterpriseUpdate
+
 router = APIRouter(
     prefix="/enterprises",
-    tags=["enterprises"],
-    #dependencies=[Depends(get_token_header)],
-    #responses={404: {"description": "Not found"}},
+    tags=["enterprises"]
 )
 
 
-fake_items_db = {"plumbus": {"name": "Plumbus"}, "gun": {"name": "Portal Gun"}}
+@router.get("/", response_model=List[EnterpriseBase])
+async def read_enterprises(db: Session = Depends(get_db)):
+    return db.query(Enterprise).all()
 
 
-## GET
-@router.get("/")
-async def read_items():
-    return fake_items_db
-
-@router.get("/{item_id}")
-async def read_item(item_id: str):
-    if item_id not in fake_items_db:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return {"name": fake_items_db[item_id]["name"], "item_id": item_id}
+@router.get("/{enterprise_id}", response_model=EnterpriseBase)
+async def read_enterprise(enterprise_id: int, db: Session = Depends(get_db)):
+    enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
+    if not enterprise:
+        raise HTTPException(status_code=404, detail="Enterprise not found")
+    return enterprise
 
 
-## POST
-@router.post("/")
-async def read_item(item_id: str):
-    if item_id not in fake_items_db:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return {"name": fake_items_db[item_id]["name"], "item_id": item_id}
+@router.post("/", response_model=EnterpriseBase)
+async def create_enterprise(enterprise: EnterpriseCreate, db: Session = Depends(get_db)):
+    db_enterprise = Enterprise(**enterprise.model_dump())
+    db.add(db_enterprise)
+    db.commit()
+    db.refresh(db_enterprise)
+    return db_enterprise
 
 
-@router.put(
-    "/{item_id}",
-    tags=["custom"],
-    responses={403: {"description": "Operation forbidden"}},
-)
-async def update_item(item_id: str):
-    if item_id != "plumbus":
-        raise HTTPException(
-            status_code=403, detail="You can only update the item: plumbus"
-        )
-    return {"item_id": item_id, "name": "The great Plumbus"}
+@router.put("/{enterprise_id}", response_model=EnterpriseInDB)
+async def update_enterprise(enterprise_id: int, enterprise: EnterpriseUpdate, db: Session = Depends(get_db)):
+    db_enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
+    if not db_enterprise:
+        raise HTTPException(status_code=404, detail="Enterprise not found")
+    for attr, value in vars(enterprise).items():
+        if attr != "id":
+            setattr(db_enterprise, attr, value) if value else None
+    db.commit()
+    db.refresh(db_enterprise)
+    return db_enterprise
+
+
+@router.delete("/{enterprise_id}")
+async def delete_enterprise(enterprise_id: int, db: Session = Depends(get_db)):
+    db_enterprise = db.query(Enterprise).filter(Enterprise.id == enterprise_id).first()
+    if not db_enterprise:
+        raise HTTPException(status_code=404, detail="Enterprise not found")
+    db.delete(db_enterprise)
+    db.commit()
+    return {"message": "Enterprise deleted successfully"}
 
