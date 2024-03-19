@@ -9,29 +9,12 @@
 
 2. Склонируйте репозиторий на ваш компьютер:
     ```bash
-    git clone https://github.com/your_username/your_project.git
+    git clone https://github.com/adamerikoff/practice.git
     ```
 
 3. Перейдите в директорию проекта:
     ```bash
-    cd your_project
-    ```
-
-4. Создайте файл `.env` в корневой директории проекта и установите переменные окружения, необходимые для приложения и базы данных:
-    ```plaintext
-    # .env
-
-    # Параметры приложения FastAPI
-    APP_HOST=0.0.0.0
-    APP_PORT=8000
-    APP_DEBUG=True
-
-    # Параметры PostgreSQL
-    POSTGRES_DB=fastapi_db
-    POSTGRES_USER=fastapi_user
-    POSTGRES_PASSWORD=fastapi_password
-    POSTGRES_HOST=db
-    POSTGRES_PORT=5432
+    cd python_backend
     ```
 
 5. Запустите приложение с помощью Docker Compose:
