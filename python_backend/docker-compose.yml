@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  # Сервис для вашего приложения
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"  # Проброс портов
+    depends_on:
+      - db  # Ожидание запуска сервиса базы данных
+
+  # Сервис для базы данных PostgreSQL
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: reviro
+    ports:
+      - "5432:5432"  # Проброс порта
